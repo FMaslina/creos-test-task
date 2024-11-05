@@ -1,40 +1,28 @@
-import os
-
-import django
-import telebot
-from dotenv import load_dotenv
+from django.core.management import BaseCommand
+from telebot import TeleBot
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 
-from tg_bot.service import TelegramBotService
+from creos import settings
+from telegram_bot.service import TelegramBotService
 
-load_dotenv()
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'creos.settings')
-django.setup()
+bot = TeleBot(settings.TELEGRAM_BOT_TOKEN, threaded=False)
 
-bot_token = os.getenv("TG_BOT_TOKEN")
-
-bot = telebot.TeleBot(bot_token, parse_mode=None)
 
 service = TelegramBotService()
 
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    text = """
-    Это погодный бот,
-    вы можете узнать
-    погоду по названию
-    города, или по геолокации!
-    """
+    text = "Это погодный бот, вы можете узнать погоду по названию города"
 
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
     button_city = KeyboardButton("Узнать погоду")
     markup.add(button_city)
 
-    bot.reply_to(message, text)
+    bot.send_message(message.chat.id, text, reply_markup=markup)
 
 
-@bot.message_handler(func=lambda message: message.text == "Узнать по городу")
+@bot.message_handler(func=lambda message: message.text == "Узнать погоду")
 def request_city_name(message):
     bot.send_message(message.chat.id, "Введите название города:")
 
@@ -46,4 +34,8 @@ def get_weather_by_city(message):
     bot.send_message(message.chat.id, weather_info)
 
 
-bot.infinity_polling()
+class Command(BaseCommand):
+    help = 'Just a command for launching a Telegram bot.'
+
+    def handle(self, *args, **kwargs):
+        bot.infinity_polling()
