@@ -21,7 +21,12 @@ class WeatherService:
     def get_city_coordinates(self, city: str) -> dict:
         geocode_url = f"https://geocode-maps.yandex.ru/1.x?apikey={self.geocode_api_key}&geocode={city}&format=json"
         response = requests.get(geocode_url).json()
-        pos = response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]["Point"]["pos"]
+
+        try:
+            pos = response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]["Point"]["pos"]
+        except IndexError:
+            raise WeatherServiceError("Не удалось получить данные о погоде в городе")
+
         longitude, latitude = pos.split(" ")
 
         coordinates = dict(longitude=longitude, latitude=latitude)
@@ -67,3 +72,13 @@ class WeatherService:
         )
 
         return self.serializer(city_weather_obj).data
+
+
+class WeatherHistoryService:
+    def get_weather_history(self, queryset, filters=None):
+        if filters:
+            request_type = filters.get('request_type')
+            if request_type:
+                queryset = queryset.filter(request_type=request_type)
+
+        return queryset.select_related('city')
