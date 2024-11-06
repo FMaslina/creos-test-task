@@ -6,6 +6,7 @@
 <li>Установить зависимости через команду "pip install -r requirements.txt"</li>
 <li>Провести миграции через команду "python manage.py migrate"</li>
 <li>Запустить сервис командой "python manage.py runserver"</li>
+<li><li>Запустить бота командой "python manage.py bot"</li></li>
 <li>Зайти на запустившийся локальный сервер по адресу "127.0.0.1:8000"</li>
 </ol>
 <h3>Через docker</h3>
